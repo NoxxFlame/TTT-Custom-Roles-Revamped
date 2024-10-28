@@ -32,7 +32,7 @@ TASKMASTER = {
 function TASKMASTER.RegisterTask(task)
     task.id = task.id or task.Id or task.ID
 
-    if TASKMASTER.tasks[task.id] then
+    if TASKMASTER.killTasks[task.id] or TASKMASTER.miscTasks[task.id] then
         ErrorNoHalt("ERROR: Attempted to register Taskmaster task '" .. task.id .. "' with duplicate task ID.\n")
         return
     end

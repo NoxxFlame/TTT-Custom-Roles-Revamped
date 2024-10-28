@@ -5,7 +5,7 @@
 hook.Add("TTTScoringSecondaryWins", "Taskmaster_TTTScoringSecondaryWins", function(wintype, secondary_wins)
     for _, ply in player.Iterator() do
         if not ply:IsTaskmaster() then continue end
-        if ply["taskmasterShouldWin"] then
+        if ply.taskmasterShouldWin then
             table.insert(secondary_wins, ROLE_TASKMASTER)
             break
         end
@@ -28,13 +28,13 @@ hook.Add("HUDPaint", "Taskmaster_HUDPaint", function()
 
     local offsetX, offsetY
 
-    for _, id in ipairs(client["taskmasterKillTasks"]) do
+    for _, id in ipairs(client.taskmasterKillTasks) do
         local dx, dy = TASKMASTER.killTasks[id].DrawHUD(client, offsetX, offsetY)
         offsetX = offsetX + dx
         offsetY = offsetY + dy
     end
 
-    for _, id in ipairs(client["taskmasterMiscTasks"]) do
+    for _, id in ipairs(client.taskmasterMiscTasks) do
         local dx, dy = TASKMASTER.miscTasks[id].DrawHUD(client, offsetX, offsetY)
         offsetX = offsetX + dx
         offsetY = offsetY + dy

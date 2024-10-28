@@ -71,14 +71,16 @@ function plymeta:CompleteTask(taskId)
     if not self:IsActiveTaskmaster() then return end
 
     local isKillTask = TASKMASTER.killTasks[taskId] and true or false
+    local taskList = isKillTask and TASKMASTER.killTasks or TASKMASTER.miscTasks
     local activeTasksName = isKillTask and "taskmasterKillTasks" or "taskmasterMiscTasks"
     if table.HasValue(self[activeTasksName], taskId) then
-        table.insert(self["taskmasterCompletedTasks"], taskId)
-        self:SetProperty("taskmasterCompletedTasks", self["taskmasterCompletedTasks"], self)
+        taskList[taskId].OnTaskComplete(self)
+        table.insert(self.taskmasterCompletedTasks, taskId)
+        self:SetProperty("taskmasterCompletedTasks", self.taskmasterCompletedTasks, self)
 
-        local taskList = table.Copy(self["taskmasterKillTasks"])
-        table.Add(taskList, self["taskmasterMiscTasks"])
-        for _, id in ipairs(self["taskmasterCompletedTasks"]) do
+        local taskList = table.Copy(self.taskmasterKillTasks)
+        table.Add(taskList, self.taskmasterMiscTasks)
+        for _, id in ipairs(self.taskmasterCompletedTasks) do
             if table.HasValue(taskList, id) then
                 table.RemoveByValue(taskList, id)
             else
@@ -113,7 +115,7 @@ hook.Add("TTTWinCheckBlocks", "Taskmaster_TTTWinCheckBlocks", function(win_block
         local taskmaster = player.GetLivingRole(ROLE_TASKMASTER)
         if not IsPlayer(taskmaster) then return win_type end
 
-        if taskmaster["taskmasterShouldWin"] then return win_type end
+        if taskmaster.taskmasterShouldWin then return win_type end
 
         if win_type == WIN_TRAITOR or win_type == WIN_INNOCENT or win_type == WIN_MONSTER then
             return WIN_NONE

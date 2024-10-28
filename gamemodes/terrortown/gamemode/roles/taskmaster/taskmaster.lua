@@ -78,16 +78,16 @@ function plymeta:CompleteTask(taskId)
         table.insert(self.taskmasterCompletedTasks, taskId)
         self:SetProperty("taskmasterCompletedTasks", self.taskmasterCompletedTasks, self)
 
-        local taskList = table.Copy(self.taskmasterKillTasks)
-        table.Add(taskList, self.taskmasterMiscTasks)
+        local activeTasksList = table.Copy(self.taskmasterKillTasks)
+        table.Add(activeTasksList, self.taskmasterMiscTasks)
         for _, id in ipairs(self.taskmasterCompletedTasks) do
-            if table.HasValue(taskList, id) then
-                table.RemoveByValue(taskList, id)
+            if table.HasValue(activeTasksList, id) then
+                table.RemoveByValue(activeTasksList, id)
             else
                 break
             end
         end
-        if #taskList == 0 then
+        if #activeTasksList == 0 then
             self:SetProperty("taskmasterShouldWin", true)
         end
         return true

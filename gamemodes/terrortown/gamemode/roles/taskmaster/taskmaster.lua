@@ -89,6 +89,7 @@ function plymeta:CompleteTask(taskId)
         end
         if #activeTasksList == 0 then
             self:SetProperty("taskmasterShouldWin", true)
+            -- TODO: Alert the player that they have finished all their tasks
         end
         return true
     end

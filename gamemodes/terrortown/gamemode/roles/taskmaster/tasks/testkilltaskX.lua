@@ -1,9 +1,15 @@
 local TASK = {}
 
 TASK.id = "testkilltaskX"
-TASK.name = "Test Kill Task X"
-TASK.description = "Test Kill Task X Description"
 TASK.isKillTask = true
+
+TASK.Name = function(ply)
+    return "Test Kill Task X"
+end
+
+TASK.Description = function(ply)
+    return "Test Kill Task X Description"
+end
 
 if SERVER then
     TASK.CanAssignTask = function(ply)
@@ -11,21 +17,15 @@ if SERVER then
     end
 
     TASK.OnTaskAssigned = function(ply)
-        ply:QueueMessage(MSG_PRINTBOTH, "Task Assigned: " .. TASK.name)
+        ply:QueueMessage(MSG_PRINTBOTH, "Task Assigned: " .. TASK.Name(ply))
     end
 
     TASK.OnTaskRemoved = function(ply)
-        ply:QueueMessage(MSG_PRINTBOTH, "Task Removed: " .. TASK.name)
+        ply:QueueMessage(MSG_PRINTBOTH, "Task Removed: " .. TASK.Name(ply))
     end
 
     TASK.OnTaskComplete = function(ply)
-        ply:QueueMessage(MSG_PRINTBOTH, "Task Completed: " .. TASK.name)
-    end
-end
-
-if CLIENT then
-    TASK.DrawHUD = function(client, offsetX, offsetY)
-
+        ply:QueueMessage(MSG_PRINTBOTH, "Task Completed: " .. TASK.Name(ply))
     end
 end
 

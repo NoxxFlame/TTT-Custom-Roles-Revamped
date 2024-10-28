@@ -14,7 +14,7 @@ local taskmaster_misc_tasks = GetConVar("ttt_taskmaster_misc_tasks")
 ---------------------
 
 function plymeta:AssignTask(isKillTask, index)
-    if not self:IsActiveTaskmaster() then return end
+    if not self:IsTaskmaster() then return end
 
     local taskList = isKillTask and TASKMASTER.killTasks or TASKMASTER.miscTasks
     local taskIds = table.GetKeys(taskList)
@@ -43,7 +43,7 @@ function plymeta:AssignTask(isKillTask, index)
 end
 
 function plymeta:RemoveTask(taskId)
-    if not self:IsActiveTaskmaster() then return end
+    if not self:IsTaskmaster() then return end
 
     local isKillTask = TASKMASTER.killTasks[taskId] and true or false
     local taskList = isKillTask and TASKMASTER.killTasks or TASKMASTER.miscTasks
@@ -56,7 +56,7 @@ function plymeta:RemoveTask(taskId)
 end
 
 function plymeta:RerollTask(taskId)
-    if not self:IsActiveTaskmaster() then return end
+    if not self:IsTaskmaster() then return end
 
     local isKillTask = TASKMASTER.killTasks[taskId] and true or false
     local activeTasksName = isKillTask and "taskmasterKillTasks" or "taskmasterMiscTasks"
@@ -96,6 +96,9 @@ function plymeta:CompleteTask(taskId)
 end
 
 ROLE_ON_ROLE_ASSIGNED[ROLE_TASKMASTER] = function(ply)
+    ply:SetProperty("taskmasterKillTasks", {}, ply)
+    ply:SetProperty("taskmasterMiscTasks", {}, ply)
+    ply:SetProperty("taskmasterCompletedTasks", {}, ply)
     for _ = 1, taskmaster_kill_tasks:GetInt() do
         ply:AssignTask(true)
     end
@@ -128,10 +131,10 @@ end)
 -------------
 
 local function CleanupTasks(ply)
-    ply:SetProperty("taskmasterKillTasks", {}, ply)
-    ply:SetProperty("taskmasterMiscTasks", {}, ply)
-    ply:SetProperty("taskmasterCompletedTasks", {}, ply)
-    ply:SetProperty("taskmasterShouldWin", false)
+    ply:ClearProperty("taskmasterKillTasks", ply)
+    ply:ClearProperty("taskmasterMiscTasks", ply)
+    ply:ClearProperty("taskmasterCompletedTasks", ply)
+    ply:ClearProperty("taskmasterShouldWin")
 end
 
 hook.Add("TTTPrepareRound", "Taskmaster_TTTPrepareRound", function()

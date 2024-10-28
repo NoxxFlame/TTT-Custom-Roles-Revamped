@@ -26,17 +26,21 @@ hook.Add("HUDPaint", "Taskmaster_HUDPaint", function()
     end
     if not client:IsTaskmaster() then return end
 
-    local offsetX, offsetY
+    local offsetX, offsetY = 10, 10
 
     for _, id in ipairs(client.taskmasterKillTasks) do
-        local dx, dy = TASKMASTER.killTasks[id].DrawHUD(client, offsetX, offsetY)
-        offsetX = offsetX + dx
-        offsetY = offsetY + dy
+        if TASKMASTER.killTasks[id].DrawHUD then
+            local dx, dy = TASKMASTER.killTasks[id].DrawHUD(client, offsetX, offsetY)
+            if dx then offsetX = offsetX + dx end
+            if dy then offsetY = offsetY + dy end
+        end
     end
 
     for _, id in ipairs(client.taskmasterMiscTasks) do
-        local dx, dy = TASKMASTER.miscTasks[id].DrawHUD(client, offsetX, offsetY)
-        offsetX = offsetX + dx
-        offsetY = offsetY + dy
+        if TASKMASTER.miscTasks[id].DrawHUD then
+            local dx, dy = TASKMASTER.miscTasks[id].DrawHUD(client, offsetX, offsetY)
+            if dx then offsetX = offsetX + dx end
+            if dy then offsetY = offsetY + dy end
+        end
     end
 end)

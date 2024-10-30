@@ -293,7 +293,7 @@ function CreateTaskList(dscrollpanel)
 
         local dspacer = vgui.Create("DPanel", dscrollpanel)
         dspacer:SetPaintBackground(false)
-        dspacer:SetSize(width, spacerHeight)
+        dspacer:SetSize(spacerWidth, spacerHeight)
         dspacer:SetPos(0, dtasksHeight)
 
         dtasksHeight = dtasksHeight + spacerHeight

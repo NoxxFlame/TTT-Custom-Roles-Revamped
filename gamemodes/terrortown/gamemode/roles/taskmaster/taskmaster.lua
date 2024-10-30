@@ -194,8 +194,6 @@ hook.Add("TTTWinCheckBlocks", "Taskmaster_TTTWinCheckBlocks", function(win_block
 end)
 
 hook.Add("TTTCheckForWin", "Taskmaster_TTTCheckForWin", function()
-    if not INDEPENDENT_ROLES[ROLE_ZOMBIE] then return end
-
     local winning_taskmaster_alive = false
     local other_alive = false
     for _, v in player.Iterator() do

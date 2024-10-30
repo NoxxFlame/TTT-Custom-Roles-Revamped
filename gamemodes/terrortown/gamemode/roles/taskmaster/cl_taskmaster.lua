@@ -11,6 +11,9 @@ hook.Add("Initialize", "Taskmaster_Translations_Initialize", function()
     LANG.AddToLanguage("english", "equip_tooltip_taskmaster_reroll", "Task Reroll control")
 
     LANG.AddToLanguage("english", "taskmaster_reroll_name", "Task Reroll")
+
+    -- Bonus credit popup
+    LANG.AddToLanguage("english", "taskmaster_credit_bonus", "{role}, you have been awarded {num} credit(s) for completing a task.")
 end)
 
 -------------
@@ -68,6 +71,11 @@ local function DrawTask(task, height, isShadow)
 
     local name = task.Name(client)
     local desc = task.Description(client)
+    local progress
+    if task.Progress then
+        progress = task.Progress(client)
+        desc = desc .. " " .. progress
+    end
     local completed = table.HasValue(client.taskmasterCompletedTasks, task.id)
 
     -- The checkboxes don't naturally align with the text, thus the '+2's everywhere to make it line up
@@ -182,6 +190,7 @@ local dtasks = {}
 local dtasksHeight = 0
 
 local scrollBarWidth = 15
+local creditsIconSize = 32
 
 local CreateTaskList
 
@@ -232,8 +241,6 @@ local function CreateTaskReroll(task, dscrollpanel)
         net.Start("TTT_TaskmasterRerollTask")
         net.WriteString(task.id)
         net.SendToServer()
-
-        CreateTaskList(dscrollpanel)
     end
 
     dreroll.Think = function()
@@ -254,6 +261,8 @@ local function CreateTaskReroll(task, dscrollpanel)
 end
 
 function CreateTaskList(dscrollpanel)
+    if not dscrollpanel:IsValid() then return end
+
     for _, dtask in ipairs(dtasks) do
         dtask:Remove()
     end
@@ -278,6 +287,16 @@ function CreateTaskList(dscrollpanel)
 
     if #dtasks > 0 then
         dtasks[#dtasks]:Remove()
+
+        local spacerWidth, _ = dscrollpanel:GetSize()
+        local spacerHeight = (margin * 2) + creditsIconSize
+
+        local dspacer = vgui.Create("DPanel", dscrollpanel)
+        dspacer:SetPaintBackground(false)
+        dspacer:SetSize(width, spacerHeight)
+        dspacer:SetPos(0, dtasksHeight)
+
+        dtasksHeight = dtasksHeight + spacerHeight
     end
 
     if dtasksHeight > dscrollpanel:GetTall() then
@@ -303,11 +322,54 @@ hook.Add("TTTEquipmentTabs", "Taskmaster_TTTEquipmentTabs", function(dsheet, dfr
         dpanel:SetBackgroundColor(Color(90, 90, 95))
         dpanel:StretchToParent(padding, padding + tabHeight, padding, padding)
 
+        local _, panelHeight = dpanel:GetSize()
+
         local dscrollpanel = vgui.Create("DScrollPanel", dpanel)
         dscrollpanel:SetPaintBackground(false)
         dscrollpanel:StretchToParent(0, 0, 0, 0)
 
+        local dcredits = vgui.Create("Panel", dsheet)
+        dcredits.Paint = function(panel, w, h)
+            draw.RoundedBoxEx(8, 0, 0, w, h, Color(151, 155, 159), false, true, false, false)
+        end
+
+        local dcreditsicon = vgui.Create("DImage", dcredits)
+        dcreditsicon:SetSize(creditsIconSize, creditsIconSize)
+        dcreditsicon:SetImage("vgui/ttt/equip/coin.png")
+
+        local dcreditsamount = vgui.Create("DLabel", dcredits)
+        dcreditsamount:SetFont("DermaLarge")
+
+        dcreditsamount.Think = function()
+            local credits = client:GetCredits()
+            local noCreditsColor = Color(220, 60, 60, 255)
+
+            dcreditsamount:SetText(" " .. credits)
+            dcreditsamount:SetColor(credits == 0 and noCreditsColor or COLOR_WHITE)
+            dcreditsamount:SizeToContents()
+
+            dcreditsicon:SetImageColor(credits == 0 and noCreditsColor or COLOR_WHITE)
+
+            local creditsAmountWidth, _ = dcreditsamount:GetSize()
+
+            local creditsWidth = padding + margin + creditsAmountWidth + creditsIconSize
+            local creditsHeight = padding + margin + creditsIconSize
+            dcredits:SetSize(creditsWidth, creditsHeight)
+            dcredits:SetPos(padding, panelHeight - creditsHeight + padding + tabHeight)
+
+            dcreditsamount:SetPos(padding + creditsIconSize, margin)
+            dcreditsicon:SetPos(padding, margin)
+
+            dcredits:MoveToFront()
+            dcreditsamount:MoveToFront()
+            dcreditsicon:MoveToFront()
+        end
+
         CreateTaskList(dscrollpanel)
+
+        net.Receive("TTT_TaskmasterUpdateTaskList", function(len, ply)
+            CreateTaskList(dscrollpanel)
+        end)
 
         dsheet:AddSheet(LANG.GetTranslation("taskmaster_reroll_name"), dscrollpanel, "icon16/table_edit.png", false, false, LANG.GetTranslation("equip_tooltip_taskmaster_reroll"))
         return true

@@ -3,6 +3,7 @@ AddCSLuaFile()
 local plymeta = FindMetaTable("Player")
 
 util.AddNetworkString("TTT_TaskmasterRerollTask")
+util.AddNetworkString("TTT_TaskmasterUpdateTaskList")
 
 -------------
 -- CONVARS --
@@ -10,6 +11,7 @@ util.AddNetworkString("TTT_TaskmasterRerollTask")
 
 local taskmaster_kill_tasks = GetConVar("ttt_taskmaster_kill_tasks")
 local taskmaster_misc_tasks = GetConVar("ttt_taskmaster_misc_tasks")
+local taskmaster_completion_bonus = GetConVar("ttt_taskmaster_completion_bonus")
 
 ---------------------
 -- TASK ASSIGNMENT --
@@ -78,6 +80,9 @@ function plymeta:RerollTask(taskId, free)
     if not free then
         self:SubtractCredits(1)
     end
+
+    net.Start("TTT_TaskmasterUpdateTaskList")
+    net.Send(self)
 end
 
 net.Receive("TTT_TaskmasterRerollTask", function(len, ply)
@@ -108,6 +113,19 @@ function plymeta:CompleteTask(taskId)
             self:SetProperty("taskmasterShouldWin", true)
             -- TODO: Alert the player that they have finished all their tasks
         end
+
+        net.Start("TTT_TaskmasterUpdateTaskList")
+        net.Send(self)
+
+        local bonus = taskmaster_completion_bonus:GetInt()
+        if bonus > 0 then
+            self:AddCredits(bonus)
+            LANG.Msg(self, "taskmaster_credit_bonus", {
+                role = ROLE_STRINGS[ROLE_TASKMASTER],
+                num = bonus
+            })
+        end
+
         return true
     end
     return false

@@ -1,11 +1,14 @@
 AddCSLuaFile()
 
+ROLE_STARTING_CREDITS[ROLE_TASKMASTER] = 1
+
 ------------------
 -- ROLE CONVARS --
 ------------------
 
 CreateConVar("ttt_taskmaster_kill_tasks", "1", FCVAR_REPLICATED, "The number of kill tasks assigned to the Taskmaster", 0, 10)
 CreateConVar("ttt_taskmaster_misc_tasks", "2", FCVAR_REPLICATED, "The number of miscellaneous tasks assigned to the Taskmaster", 0, 10)
+CreateConVar("ttt_taskmaster_completion_bonus", "1", FCVAR_REPLICATED, "How many credits the Taskmaster should get whenever they complete a task", 0, 10)
 
 ROLE_CONVARS[ROLE_TASKMASTER] = {}
 

@@ -14,11 +14,20 @@ hook.Add("Initialize", "Taskmaster_Translations_Initialize", function()
 
     -- Bonus credit popup
     LANG.AddToLanguage("english", "taskmaster_credit_bonus", "{role}, you have been awarded {num} credit(s) for completing a task.")
+
+    -- Win conditions
+    LANG.AddToLanguage("english", "win_taskmaster", "The {role} finished off their list!")
+    LANG.AddToLanguage("english", "ev_win_taskmaster", "The methodical {role} has won the round!")
+
+    -- HUD
+    LANG.AddToLanguage("english", "taskmaster_hud", "You will lose in: {time}")
 end)
 
 -------------
 -- CONVARS --
 -------------
+
+local taskmaster_wins_with_others = GetConVar("ttt_taskmaster_wins_with_others")
 
 local xOffset = CreateClientConVar("ttt_taskmaster_list_x_pos", "10", true, false, "The X (horizontal) position of the Taskmaster's task list HUD", 0, ScrW())
 local yOffset = CreateClientConVar("ttt_taskmaster_list_y_pos", "10", true, false, "The Y (vertical) position of the Taskmaster's task list HUD", 0, ScrH())
@@ -36,13 +45,39 @@ end)
 -- WIN CHECKS --
 ----------------
 
+hook.Add("TTTScoringWinTitle", "Taskmaster_TTTScoringWinTitle", function(wintype, wintitles, title, secondary_win_role)
+    if wintype == WIN_TASKMASTER then
+        return { txt = "hilite_win_role_singular", params = { role = string.upper(ROLE_STRINGS[ROLE_TASKMASTER]) }, c = ROLE_COLORS[ROLE_TASKMASTER] }
+    end
+end)
+
 hook.Add("TTTScoringSecondaryWins", "Taskmaster_TTTScoringSecondaryWins", function(wintype, secondary_wins)
+    if wintype == WIN_TASKMASTER then return end
+
+    if not taskmaster_wins_with_others:GetBool() then return end
+
     for _, ply in player.Iterator() do
         if not ply:IsTaskmaster() then continue end
         if ply.taskmasterShouldWin then
             table.insert(secondary_wins, ROLE_TASKMASTER)
             break
         end
+    end
+end)
+
+------------
+-- EVENTS --
+------------
+
+hook.Add("TTTEventFinishText", "Taskmaster_TTTEventFinishText", function(e)
+    if e.win == WIN_TASKMASTER then
+        return LANG.GetParamTranslation("ev_win_taskmaster", { role = string.lower(ROLE_STRINGS[ROLE_TASKMASTER]) })
+    end
+end)
+
+hook.Add("TTTEventFinishIconText", "Taskmaster_TTTEventFinishIconText", function(e, win_string, role_string)
+    if e.win == WIN_TASKMASTER then
+        return win_string, ROLE_STRINGS[ROLE_TASKMASTER]
     end
 end)
 
@@ -180,6 +215,29 @@ hook.Add("HUDPaint", "Taskmaster_HUDPaint", function()
     end
 
     maxHeight = height - yOffset:GetInt()
+end)
+
+hook.Add("TTTHUDInfoPaint", "Taskmaster_TTTHUDInfoPaint", function(client, label_left, label_top, active_labels)
+    if client:IsActiveTaskmaster() then
+        local blockEnd = GetGlobalFloat("taskmaster_block_end", 0)
+        if blockEnd > 0 then
+            surface.SetFont("TabLarge")
+            surface.SetTextColor(255, 255, 255, 230)
+
+            local remaining = math.max(0, blockEnd - CurTime())
+            local text = LANG.GetParamTranslation("taskmaster_hud", { time = util.SimpleTime(remaining, "%02i:%02i") })
+            local _, h = surface.GetTextSize(text)
+
+            -- Move this up based on how many other labels here are
+            label_top = label_top + (20 * #active_labels)
+
+            surface.SetTextPos(label_left, ScrH() - label_top - h)
+            surface.DrawText(text)
+
+            -- Track that the label was added so others can position accurately
+            table.insert(active_labels, "taskmaster")
+        end
+    end
 end)
 
 ----------------------

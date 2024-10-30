@@ -12,6 +12,9 @@ util.AddNetworkString("TTT_TaskmasterUpdateTaskList")
 local taskmaster_kill_tasks = GetConVar("ttt_taskmaster_kill_tasks")
 local taskmaster_misc_tasks = GetConVar("ttt_taskmaster_misc_tasks")
 local taskmaster_completion_bonus = GetConVar("ttt_taskmaster_completion_bonus")
+local taskmaster_blocks_team_wins = GetConVar("ttt_taskmaster_blocks_team_wins")
+local taskmaster_win_block_length = GetConVar("ttt_taskmaster_win_block_length")
+local taskmaster_wins_with_others = GetConVar("ttt_taskmaster_wins_with_others")
 
 ---------------------
 -- TASK ASSIGNMENT --
@@ -144,23 +147,78 @@ ROLE_ON_ROLE_ASSIGNED[ROLE_TASKMASTER] = function(ply)
     end
 end
 
-------------------
--- WIN BLOCKING --
-------------------
+----------------
+-- WIN CHECKS --
+----------------
 
 hook.Add("TTTWinCheckBlocks", "Taskmaster_TTTWinCheckBlocks", function(win_blocks)
     table.insert(win_blocks, function(win_type)
-        if win_type == WIN_NONE then return win_type end
+        if win_type == WIN_NONE or win_type == WIN_TASKMASTER then return win_type end
 
         local taskmaster = player.GetLivingRole(ROLE_TASKMASTER)
         if not IsPlayer(taskmaster) then return win_type end
 
         if taskmaster.taskmasterShouldWin then return win_type end
 
+        if not taskmaster_blocks_team_wins:GetBool() then return win_type end
+
         if win_type == WIN_TRAITOR or win_type == WIN_INNOCENT or win_type == WIN_MONSTER then
+            local win_block_length = taskmaster_win_block_length:GetInt()
+            if win_block_length > 0 then
+                local winBlockEnd = GetGlobalFloat("taskmaster_block_end", 0)
+                if winBlockEnd == 0 then
+                    local roundEnd = GetGlobalFloat("ttt_round_end", 0)
+                    local blockEnd = CurTime() + win_block_length
+                    if blockEnd > roundEnd then
+                        win_block_length = roundEnd - CurTime()
+                    end
+                    SetGlobalFloat("taskmaster_block_end", CurTime() + win_block_length)
+                    local teamName
+                    if win_type == WIN_TRAITOR then teamName = "traitor"
+                    elseif win_type == WIN_INNOCENT then teamName = "innocent"
+                    elseif win_type == WIN_MONSTER then teamName = "monster" end
+
+                    for _, ply in player.Iterator() do
+                        if ply:IsActiveTaskmaster() then
+                            ply:QueueMessage(MSG_PRINTBOTH, "The " .. teamName .. " team have won! You have " .. math.Round(win_block_length) .. " seconds left to finish your tasks before the round ends!")
+                        end
+                    end
+                elseif CurTime() > winBlockEnd then
+                    return win_type
+                end
+            end
+
             return WIN_NONE
         end
     end)
+end)
+
+hook.Add("TTTCheckForWin", "Taskmaster_TTTCheckForWin", function()
+    if not INDEPENDENT_ROLES[ROLE_ZOMBIE] then return end
+
+    local winning_taskmaster_alive = false
+    local other_alive = false
+    for _, v in player.Iterator() do
+        if v:IsActive() then
+            if v:IsTaskmaster() and v.taskmasterShouldWin then
+                winning_taskmaster_alive = true
+            elseif not v:ShouldActLikeJester() and not ROLE_HAS_PASSIVE_WIN[v:GetRole()] then
+                other_alive = true
+            end
+        end
+    end
+
+    if winning_taskmaster_alive and (not taskmaster_wins_with_others:GetBool() or not other_alive) then
+        return WIN_TASKMASTER
+    end
+end)
+
+hook.Add("TTTPrintResultMessage", "Taskmaster_TTTPrintResultMessage", function(type)
+    if type == WIN_TASKMASTER then
+        LANG.Msg("win_taskmaster", { role = ROLE_STRINGS[ROLE_TASKMASTER] })
+        ServerLog("Result: " .. ROLE_STRINGS[ROLE_TASKMASTER] .. " wins.\n")
+        return true
+    end
 end)
 
 -------------
@@ -176,6 +234,7 @@ local function CleanupTasks(ply)
 end
 
 hook.Add("TTTPrepareRound", "Taskmaster_TTTPrepareRound", function()
+    SetGlobalFloat("taskmaster_block_end", 0)
     for _, ply in player.Iterator() do
         CleanupTasks(ply)
     end

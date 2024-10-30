@@ -6,6 +6,11 @@ hook.Add("Initialize", "Taskmaster_Translations_Initialize", function()
     -- ConVars
     LANG.AddToLanguage("english", "taskmaster_config_x_pos", "Task list X (horizontal) position")
     LANG.AddToLanguage("english", "taskmaster_config_y_pos", "Task list Y (vertical) position")
+
+    -- Reroll Menu
+    LANG.AddToLanguage("english", "equip_tooltip_taskmaster_reroll", "Task Reroll control")
+
+    LANG.AddToLanguage("english", "taskmaster_reroll_name", "Task Reroll")
 end)
 
 -------------
@@ -169,3 +174,142 @@ hook.Add("HUDPaint", "Taskmaster_HUDPaint", function()
     maxHeight = height - yOffset:GetInt()
 end)
 
+----------------------
+-- TASK REROLL MENU --
+----------------------
+
+local dtasks = {}
+local dtasksHeight = 0
+
+local scrollBarWidth = 15
+
+local CreateTaskList
+
+local function CreateTaskReroll(task, dscrollpanel)
+    if table.HasValue(client.taskmasterCompletedTasks, task.id) then return false end
+
+    local name = task.Name(client)
+    local desc = task.Description(client)
+
+    local width, _ = dscrollpanel:GetSize()
+
+    local dpanel = vgui.Create("DPanel", dscrollpanel)
+    dpanel:SetPaintBackground(false)
+    dpanel:SetWidth(width)
+    dpanel:SetPos(0, dtasksHeight)
+
+    local buttonWidth, buttonHeight = 80, 45
+
+    local dname = vgui.Create("DLabel", dpanel)
+    dname:SetFont("TraitorStateSmall")
+    dname:SetText(name)
+    dname:SetPos(margin, margin)
+    dname:SetWidth(width - (margin * 2) - buttonWidth - scrollBarWidth)
+
+    local _, nameHeight = dname:GetSize()
+
+    local ddesc = vgui.Create("DLabel", dpanel)
+    ddesc:SetFont("UseHint")
+    ddesc:SetText(desc)
+    ddesc:SetPos(margin, (margin * 1.5) + nameHeight)
+    ddesc:SetWidth(width - (margin * 2) - buttonWidth - scrollBarWidth)
+    ddesc:SetWrap(true)
+    ddesc:SetAutoStretchVertical(true)
+
+    local _, descHeight = ddesc:GetSize()
+    local height = (margin * 2.5) + nameHeight + descHeight
+
+    dpanel:SetHeight(height)
+
+    local dreroll = vgui.Create("DButton", dpanel)
+    dreroll:SetSize(buttonWidth, buttonHeight)
+    dreroll:SetPos(width - margin - buttonWidth, (height - buttonHeight) / 2)
+    dreroll:SetText("    Reroll\n (1 credit)")
+
+    dreroll.DoClick = function()
+        if client:GetCredits() == 0 then return end
+
+        net.Start("TTT_TaskmasterRerollTask")
+        net.WriteString(task.id)
+        net.SendToServer()
+
+        CreateTaskList(dscrollpanel)
+    end
+
+    dreroll.Think = function()
+        dreroll:SetDisabled(client:GetCredits() == 0)
+    end
+
+    dpanel.rerollButton = dreroll
+
+    dtasksHeight = dtasksHeight + height
+
+    local dline = vgui.Create("DPanel", dscrollpanel)
+    dline:SetSize(width, 1)
+    dline:SetPos(0, dtasksHeight)
+
+    dtasksHeight = dtasksHeight + 1
+
+    return dpanel, dline
+end
+
+function CreateTaskList(dscrollpanel)
+    for _, dtask in ipairs(dtasks) do
+        dtask:Remove()
+    end
+    dtasks = {}
+    dtasksHeight = 0
+
+    for _, id in ipairs(client.taskmasterKillTasks) do
+        local dtask, dline = CreateTaskReroll(TASKMASTER.killTasks[id], dscrollpanel)
+        if dtask then
+            table.insert(dtasks, dtask)
+            table.insert(dtasks, dline)
+        end
+    end
+
+    for _, id in ipairs(client.taskmasterMiscTasks) do
+        local dtask, dline = CreateTaskReroll(TASKMASTER.miscTasks[id], dscrollpanel)
+        if dtask then
+            table.insert(dtasks, dtask)
+            table.insert(dtasks, dline)
+        end
+    end
+
+    if #dtasks > 0 then
+        dtasks[#dtasks]:Remove()
+    end
+
+    if dtasksHeight > dscrollpanel:GetTall() then
+        for _, dtask in ipairs(dtasks) do
+            if dtask.rerollButton then
+                local xPos, yPos = dtask.rerollButton:GetPos()
+                dtask.rerollButton:SetPos(xPos - scrollBarWidth, yPos)
+            end
+        end
+    end
+end
+
+hook.Add("TTTEquipmentTabs", "Taskmaster_TTTEquipmentTabs", function(dsheet, dframe)
+    if not client then
+        client = LocalPlayer()
+    end
+
+    if client:IsActiveTaskmaster() then
+        local padding = dsheet:GetPadding()
+        local tabHeight = 20
+
+        local dpanel = vgui.Create("DPanel", dsheet)
+        dpanel:SetBackgroundColor(Color(90, 90, 95))
+        dpanel:StretchToParent(padding, padding + tabHeight, padding, padding)
+
+        local dscrollpanel = vgui.Create("DScrollPanel", dpanel)
+        dscrollpanel:SetPaintBackground(false)
+        dscrollpanel:StretchToParent(0, 0, 0, 0)
+
+        CreateTaskList(dscrollpanel)
+
+        dsheet:AddSheet(LANG.GetTranslation("taskmaster_reroll_name"), dscrollpanel, "icon16/table_edit.png", false, false, LANG.GetTranslation("equip_tooltip_taskmaster_reroll"))
+        return true
+    end
+end)

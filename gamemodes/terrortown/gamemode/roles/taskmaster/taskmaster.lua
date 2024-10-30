@@ -2,6 +2,8 @@ AddCSLuaFile()
 
 local plymeta = FindMetaTable("Player")
 
+util.AddNetworkString("TTT_TaskmasterRerollTask")
+
 -------------
 -- CONVARS --
 -------------
@@ -22,6 +24,9 @@ function plymeta:AssignTask(isKillTask, index)
 
     for _, activeId in ipairs(self[activeTasksName]) do
         table.RemoveByValue(taskIds, activeId)
+    end
+    for _, rerolledId in ipairs(self.taskmasterRerolledTasks) do
+        table.RemoveByValue(taskIds, rerolledId)
     end
     table.Shuffle(taskIds)
 
@@ -55,17 +60,29 @@ function plymeta:RemoveTask(taskId)
     self:SetProperty(activeTasksName, self[activeTasksName], self)
 end
 
-function plymeta:RerollTask(taskId)
+function plymeta:RerollTask(taskId, free)
     if not self:IsTaskmaster() then return end
+    if not free and self:GetCredits() == 0 then return end
 
     local isKillTask = TASKMASTER.killTasks[taskId] and true or false
     local activeTasksName = isKillTask and "taskmasterKillTasks" or "taskmasterMiscTasks"
     local index = table.KeyFromValue(self[activeTasksName], taskId)
     if not index then return end
 
+    table.insert(self.taskmasterRerolledTasks, taskId)
+    self:SetProperty("taskmasterRerolledTasks", self.taskmasterRerolledTasks, self)
+
     self:AssignTask(isKillTask, index)
     self:RemoveTask(taskId)
+
+    if not free then
+        self:SubtractCredits(1)
+    end
 end
+
+net.Receive("TTT_TaskmasterRerollTask", function(len, ply)
+    ply:RerollTask(net.ReadString())
+end)
 
 function plymeta:CompleteTask(taskId)
     if not self:IsActiveTaskmaster() then return end
@@ -100,6 +117,7 @@ ROLE_ON_ROLE_ASSIGNED[ROLE_TASKMASTER] = function(ply)
     ply:SetProperty("taskmasterKillTasks", {}, ply)
     ply:SetProperty("taskmasterMiscTasks", {}, ply)
     ply:SetProperty("taskmasterCompletedTasks", {}, ply)
+    ply:SetProperty("taskmasterRerolledTasks", {}, ply)
     for _ = 1, taskmaster_kill_tasks:GetInt() do
         ply:AssignTask(true)
     end
@@ -135,6 +153,7 @@ local function CleanupTasks(ply)
     ply:ClearProperty("taskmasterKillTasks", ply)
     ply:ClearProperty("taskmasterMiscTasks", ply)
     ply:ClearProperty("taskmasterCompletedTasks", ply)
+    ply:ClearProperty("taskmasterRerolledTasks", ply)
     ply:ClearProperty("taskmasterShouldWin")
 end
 

@@ -12,6 +12,7 @@ Includes beta updates [2.1.17](#2117-beta) and [2.1.20](#2120-beta).
 - Fixed external roles that belong to teams with default shop items (traitors, detectives) not having those default items in their shop if they set up their equipment items table manually
 - Fixed illusionist not blocking traitor team highlighting when that is enabled
 - Fixed the twins not spawning/despawning correctly when only one twin was assigned through a rolepack
+- Fixed error in the drunk role selection logic when a role doesn't have the `ttt_drunk_can_be_*` convar
 
 ## 2.1.20 (Beta)
 **Released: August 10th, 2024**

@@ -7,6 +7,7 @@ Includes beta updates [2.1.17](#2117-beta) and [2.1.20](#2120-beta).
 ### Changes
 - Changed the plaguemaster's default convar value to make the spread time lower
   - This should make it easier for the plague to naturally spread between infected players
+- Changed how bodysnatcher forced crouch logic works to hopefully fix cases where the resurrected player could not uncrouch
 
 ### Fixes
 - Fixed external roles that belong to teams with default shop items (traitors, detectives) not having those default items in their shop if they set up their equipment items table manually

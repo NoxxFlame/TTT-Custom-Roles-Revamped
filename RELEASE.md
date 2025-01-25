@@ -1,5 +1,11 @@
 # Release Notes
 
+## 2.2.6 (Beta)
+**Released:**
+
+### Fixes
+- Fixed vampire fangs sometimes leaving players stuck frozen
+
 ## 2.2.5 (Beta)
 **Released: January 25th, 2025**
 

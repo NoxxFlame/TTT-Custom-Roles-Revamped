@@ -1,5 +1,14 @@
 # Release Notes
 
+## 2.2.5 (Beta)
+**Released: January 25th, 2025**
+
+### Additions
+- Added ability to control whether to apply the damage penalties after an assassin has completed their assignments (enabled by default)
+
+### Changes
+- Changed assassin to apply damage scaling to jesters since the reason it wasn't (activated clown) no longer applies anyway
+
 ## 2.2.4 (Beta)
 **Released: January 12th, 2025**
 

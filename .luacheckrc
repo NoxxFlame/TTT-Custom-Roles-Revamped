@@ -1109,6 +1109,7 @@ globals = {
     "ROLE_SPONGE",
     "ROLE_SPY",
     "ROLE_SWAPPER",
+    "ROLE_TASKMASTER",
     "ROLE_TRACKER",
     "ROLE_TRICKSTER",
     "ROLE_TURNCOAT",
@@ -1173,6 +1174,7 @@ globals = {
     "CRHUD",
     "DEATHRADAR",
     "SYNC",
+    "TASKMASTER",
 
     -- Randomat Namespaces
     "Randomat",

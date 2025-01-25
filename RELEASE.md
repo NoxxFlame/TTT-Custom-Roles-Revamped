@@ -1,7 +1,7 @@
 # Release Notes
 
 ## 2.2.5 (Beta)
-**Released:**
+**Released: January 25th, 2025**
 
 ### Additions
 - Added ability to control whether to apply the damage penalties after an assassin has completed their assignments (enabled by default)

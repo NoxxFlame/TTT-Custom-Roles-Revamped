@@ -151,7 +151,7 @@ function GetEquipmentForRole(role, promoted, block_randomization, block_exclusio
 
     -- Pre-load the Traitor weapons so that any that have their CanBuy modified will also apply to the enabled allied role(s)
     if sync_traitor_weapons and not Equipment[ROLE_TRAITOR] then
-        GetEquipmentForRole(ROLE_TRAITOR, false, true, block_exclusion, ignore_cache, rolepack_weps)
+        GetEquipmentForRole(ROLE_TRAITOR, false, true, block_exclusion, ignore_cache)
     end
 
     local detectivesync = DETECTIVE_ROLES[role] and cvars.Bool("ttt_" .. ROLE_STRINGS_RAW[role] .. "_shop_sync", false)
@@ -159,7 +159,7 @@ function GetEquipmentForRole(role, promoted, block_randomization, block_exclusio
 
     -- Pre-load the Detective weapons so that any that have their CanBuy modified will also apply to the enabled allied role(s)
     if sync_detective_weapons and not Equipment[ROLE_DETECTIVE] then
-        GetEquipmentForRole(ROLE_DETECTIVE, false, true, block_exclusion, ignore_cache, rolepack_weps)
+        GetEquipmentForRole(ROLE_DETECTIVE, false, true, block_exclusion, ignore_cache)
     end
 
     -- Pre-load all role weapons for all the sync roles (if there are any)

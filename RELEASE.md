@@ -1,5 +1,13 @@
 # Release Notes
 
+## 2.2.6 (Beta)
+**Released:**
+
+### Fixes
+- Fixed vampire fangs sometimes leaving players stuck frozen
+- Fixed weapons that are excluded from a role not showing in the roleweapons configuration UI, blocking admins from un-excluding them easily
+- Fixed weapons excluded from the traitor/detective shops using the rolepack weapons tab still showing in the shop for roles whose shop are synced from it
+
 ## 2.2.5 (Beta)
 **Released: January 25th, 2025**
 

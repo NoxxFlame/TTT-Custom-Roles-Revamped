@@ -3,6 +3,9 @@
 ## 2.2.6 (Beta)
 **Released:**
 
+### Changes
+- Ported "TTT: Magneto-stick code cleanup"
+
 ### Fixes
 - Fixed vampire fangs sometimes leaving players stuck frozen
 - Fixed weapons that are excluded from a role not showing in the roleweapons configuration UI, blocking admins from un-excluding them easily

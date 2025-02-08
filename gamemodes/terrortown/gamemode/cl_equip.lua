@@ -541,13 +541,22 @@ end
 -- Create the buy menu
 
 local eqframe = nil
-
-local function ForceCloseTraitorMenu(ply, cmd, args)
+local function ForceCloseTraitorMenu()
     if IsValid(eqframe) then
         eqframe:Close()
+        eqframe = nil
+        return true
     end
+    return false
 end
 concommand.Add("ttt_cl_traitorpopup_close", ForceCloseTraitorMenu)
+
+hook.Add("OnPauseMenuShow", "EquipMenu_OnPauseMenuShow", function()
+    -- If we needed to close the traitor menu, don't open the pause menu too
+    if ForceCloseTraitorMenu() then
+        return false
+    end
+end)
 
 local function DoesValueMatch(item, data, value)
     if not item[data] then return false end
@@ -587,7 +596,10 @@ local function TraitorMenuPopup()
     end
 
     -- Close any existing traitor menu
-    if IsValid(eqframe) then eqframe:Close() end
+    if IsValid(eqframe) then
+        eqframe:Close()
+        eqframe = nil
+    end
 
     local dframe = vgui.Create("DFrame")
     dframe:SetSize(w, h)

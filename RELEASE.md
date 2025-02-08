@@ -5,6 +5,7 @@
 
 ### Changes
 - Ported "TTT: Magneto-stick code cleanup"
+- Changed the time it takes to lose a target as an arsonist to be higher
 
 ### Fixes
 - Fixed vampire fangs sometimes leaving players stuck frozen

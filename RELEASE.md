@@ -11,6 +11,7 @@
   - Updated convars for paladin, sapper, shadow, and sponge radiuses to compensate
 
 ### Fixes
+- Ported "TTT: Fix C4/Radio sounds not playing outside of PAS"
 - Fixed vampire fangs sometimes leaving players stuck frozen
 - Fixed weapons that are excluded from a role not showing in the roleweapons configuration UI, blocking admins from un-excluding them easily
 - Fixed weapons excluded from the traitor/detective shops using the rolepack weapons tab still showing in the shop for roles whose shop are synced from it

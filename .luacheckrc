@@ -1151,6 +1151,7 @@ globals = {
     "GetVampireFilter",
     "GetWinningMonsterRole",
     "HandleRoleHighlights",
+    "IsMounted",
     "JesterTeamKilledNotification",
     "LoadMonsterEquipment",
     "OnPlayerHighlightEnabled",

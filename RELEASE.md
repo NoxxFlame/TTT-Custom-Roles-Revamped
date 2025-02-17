@@ -6,6 +6,7 @@
 ### Changes
 - Ported "TTT: Magneto-stick code cleanup"
 - Ported "TTT: Change holdtypes for consistency with viewmodels"
+- Ported "[TTT] Change L.hstation_hint to better reflect how to use it"
 - Changed the time it takes to lose a target as an arsonist to be higher
 - Changed buy menu, help menu, scoring screen, and body search window to all close when pressing ESC
 - Changed units/foot and units/meter scaling to be more accurate to an accepted conversion
